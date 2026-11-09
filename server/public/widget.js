@@ -106,10 +106,11 @@
   function css(s) {
     var ratio = String(s.imageRatio || '3/4');
     return (
-      ':host{all:initial;display:block;font-family:inherit;color:inherit;margin:40px 0 8px;padding:0 16px;' +
+      // Boşluklar .wrap'te: temanın "* { margin:0; padding:0 }" sıfırlaması :host'u ezebiliyor, gölge DOM içini ezemez
+      ':host{all:initial;display:block;font-family:inherit;color:inherit;' +
       '--ms-accent:' + (s.accentColor || '#111') + ';--ms-radius:' + Number(s.cardRadius || 0) + 'px;--ms-ratio:' + ratio + '}' +
       '*{box-sizing:border-box}' +
-      '.wrap{position:relative;font-family:inherit;max-width:1500px;margin:0 auto}' +
+      '.wrap{position:relative;font-family:inherit;max-width:1500px;margin:40px auto 8px;padding:0 16px}' +
       '.head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}' +
       '.title{margin:0;font-size:20px;font-weight:600;line-height:1.3;color:inherit;font-family:inherit}' +
       '.nav{display:flex;gap:8px}' +
