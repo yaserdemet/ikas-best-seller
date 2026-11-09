@@ -39,6 +39,15 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_tops_slug ON category_tops(store_id, category_slug);
 `);
 
+// Geçiş: eski varsayılan başlığı değiştirilmemiş mağazaları yeni varsayılana al
+for (const row of db.prepare('SELECT id, settings FROM stores').all()) {
+  const s = JSON.parse(row.settings || '{}');
+  if (s.title === 'Öne Çıkan Ürünler') {
+    s.title = 'Öne Çıkanlar';
+    db.prepare('UPDATE stores SET settings = ? WHERE id = ?').run(JSON.stringify(s), row.id);
+  }
+}
+
 function rowToStore(row, { withSecret = false } = {}) {
   if (!row) return null;
   const store = {

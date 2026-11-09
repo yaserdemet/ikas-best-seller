@@ -32,8 +32,8 @@ export const DEFAULT_SETTINGS = {
   syncIntervalHours: 6,
   excludedCategorySlugs: [],   // bölümün gösterilmeyeceği kategoriler
   // Görünüm
-  title: 'Öne Çıkan Ürünler',
-  selectorDesktop: '',         // boşsa: #ms-bestsellers > main
+  title: 'Öne Çıkanlar',
+  selectorDesktop: '',         // boşsa: #ms-bestsellers > .container.category-products-main > main
   selectorMobile: '',          // boşsa masaüstü seçici kullanılır
   position: 'beforebegin',     // beforebegin | afterbegin | beforeend | afterend
   accentColor: '#111111',

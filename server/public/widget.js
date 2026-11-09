@@ -106,10 +106,10 @@
   function css(s) {
     var ratio = String(s.imageRatio || '3/4');
     return (
-      ':host{all:initial;display:block;font-family:inherit;color:inherit;margin:24px 0;' +
+      ':host{all:initial;display:block;font-family:inherit;color:inherit;margin:40px 0 8px;padding:0 16px;' +
       '--ms-accent:' + (s.accentColor || '#111') + ';--ms-radius:' + Number(s.cardRadius || 0) + 'px;--ms-ratio:' + ratio + '}' +
       '*{box-sizing:border-box}' +
-      '.wrap{position:relative;font-family:inherit}' +
+      '.wrap{position:relative;font-family:inherit;max-width:1500px;margin:0 auto}' +
       '.head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}' +
       '.title{margin:0;font-size:20px;font-weight:600;line-height:1.3;color:inherit;font-family:inherit}' +
       '.nav{display:flex;gap:8px}' +
@@ -122,7 +122,8 @@
       '.media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .3s}' +
       '.media img.hover{opacity:0}' +
       '.card:hover .media img.hover{opacity:1}' +
-      '.badge{position:absolute;top:8px;left:8px;background:var(--ms-accent);color:#fff;font-size:11px;font-weight:600;padding:4px 8px;border-radius:999px;letter-spacing:.02em}' +
+      '.badge{position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:4px;background:#fff;color:#111;font-size:10.5px;font-weight:600;line-height:1;padding:3px 7px 3px 5px;border-radius:999px;box-shadow:0 1px 2px rgba(0,0,0,.12)}' +
+      '.badge svg{width:12px;height:12px;flex:none}' +
       '.name{margin:10px 0 4px;font-size:14px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}' +
       '.price{font-size:14px;font-weight:600;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}' +
       '.old{font-weight:400;color:#888;text-decoration:line-through;font-size:13px}' +
@@ -146,7 +147,7 @@
     var wrap = el('section', 'wrap');
     wrap.setAttribute('aria-label', data.title || settings.title);
     var head = el('div', 'head');
-    head.appendChild(el('h2', 'title', data.title || settings.title || 'Öne Çıkan Ürünler'));
+    head.appendChild(el('h2', 'title', data.title || settings.title || 'Öne Çıkanlar'));
     var nav = el('div', 'nav');
     var prev = el('button', 'btn', '‹');
     var next = el('button', 'btn', '›');
@@ -178,7 +179,14 @@
         img2.loading = 'lazy';
         media.appendChild(img2);
       }
-      if (settings.showBadge && i < 3) media.appendChild(el('span', 'badge', 'Çok Satan'));
+      if (settings.showBadge && i < 3) {
+        var badge = el('span', 'badge');
+        // Sabit SVG (kullanıcı verisi içermez)
+        badge.innerHTML =
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#FFC107" d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg>';
+        badge.appendChild(document.createTextNode('Çok Satan'));
+        media.appendChild(badge);
+      }
       a.appendChild(media);
       a.appendChild(el('div', 'name', p.name));
       var price = el('div', 'price');
@@ -207,7 +215,7 @@
   }
 
   // ---------- yerleşim ----------
-  function pickTarget(s) {
+  function pickTarget(s, allowMain) {
     var mobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
     var sel = (mobile && s.selectorMobile) || s.selectorDesktop;
     if (sel) {
@@ -224,8 +232,16 @@
     }
     var ph = document.getElementById('ms-bestsellers');
     if (ph) return { node: ph, position: 'afterbegin' };
-    var main = document.querySelector('main');
-    if (main) return { node: main, position: 'afterbegin' };
+    // ikas varsayılan temasında kategori ürün listesinin kabı (içerikle hizalı)
+    var list = document.querySelectorAll('.container.category-products-main');
+    for (var j = 0; j < list.length; j++) {
+      if (list[j].getClientRects().length) return { node: list[j], position: 'afterbegin' };
+    }
+    // <main>'e ancak beklemeden sonra düş: tema listeyi geç çizebilir
+    if (allowMain) {
+      var main = document.querySelector('main');
+      if (main) return { node: main, position: 'afterbegin' };
+    }
     return null;
   }
 
@@ -243,11 +259,23 @@
         }
       });
       obs.observe(document.documentElement, { childList: true, subtree: true });
+      // Seçici girilmemişse 3 sn sonra <main>'e düşmeye izin ver
+      if (!s.selectorDesktop && !s.selectorMobile) {
+        setTimeout(function () {
+          if (done) return;
+          var t3 = pickTarget(s, true);
+          if (t3) {
+            done = true;
+            obs.disconnect();
+            resolve(t3);
+          }
+        }, 3000);
+      }
       setTimeout(function () {
         if (!done) {
           done = true;
           obs.disconnect();
-          resolve(null);
+          resolve(pickTarget(s, true));
         }
       }, timeoutMs);
     });
@@ -304,7 +332,7 @@
     keepAlive = new MutationObserver(function () {
       if (token !== renderToken || currentSlug() !== slug) return;
       if (activeHost && !document.contains(activeHost) && retries < 5) {
-        var t = pickTarget(settings);
+        var t = pickTarget(settings, true);
         if (!t) return;
         retries++;
         t.node.insertAdjacentElement(t.position, activeHost);

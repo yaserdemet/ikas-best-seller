@@ -109,7 +109,7 @@ export default function SettingsForm({ store, onSaved }) {
       <h3>Yerleşim</h3>
       <p className="muted small">
         Bölümün ekleneceği elemanın CSS seçicisi. Boş bırakırsanız sayfada <code>&lt;div id="ms-bestsellers"&gt;</code> varsa
-        onun içine, yoksa <code>&lt;main&gt;</code>'in en üstüne eklenir. Seçiciyi bulmak için kategori sayfasında ürün
+        onun içine, yoksa ikas temasının ürün listesi alanının (<code>.container.category-products-main</code>) başına, o da yoksa <code>&lt;main&gt;</code>'in en üstüne eklenir. Seçiciyi bulmak için kategori sayfasında ürün
         listesine sağ tıklayıp <b>İncele</b> deyin.
       </p>
       <div className="grid3">
